@@ -67,6 +67,7 @@ object GraphLoader extends Logging {
             val lines = sc.textFile(path, minEdgePartitions).coalesce(minEdgePartitions)
             logWarning(">>>>>>>>>> GraphLoader.edgeListFile.read " + lines.partitions.length + " partitions")
             val edges = lines.mapPartitionsWithIndex { (pid, iter) =>
+                println("edgeListFile pid " + pid)
                 val builder = new EdgePartitionBuilder[Int, Int]
                 iter.foreach { line =>
                     if (!line.isEmpty && line(0) != '#') {

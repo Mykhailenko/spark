@@ -41,6 +41,7 @@ import org.apache.spark.storage._
 import org.apache.spark.util._
 import org.apache.spark.storage.BlockManagerMessages.BlockManagerHeartbeat
 
+import org.apache.log4j.Logger;
 /**
  * The high-level scheduling layer that implements stage-oriented scheduling. It computes a DAG of
  * stages for each job, keeps track of which RDDs and stage outputs are materialized, and finds a
@@ -69,6 +70,8 @@ class DAGScheduler(
     env: SparkEnv,
     clock: Clock = new SystemClock())
   extends Logging {
+
+  val cacheLogger = Logger.getLogger("cacheLogger");
 
   def this(sc: SparkContext, taskScheduler: TaskScheduler) = {
     this(
@@ -1245,6 +1248,9 @@ class DAGScheduler(
     if (errorMessage.isEmpty) {
       logInfo("%s (%s) finished in %s s".format(stage, stage.name, serviceTime))
       stage.latestInfo.completionTime = Some(clock.getTimeMillis())
+
+      cacheLogger.debug("" + cacheLocs)
+
     } else {
       stage.latestInfo.stageFailed(errorMessage.get)
       logInfo("%s (%s) failed in %s s".format(stage, stage.name, serviceTime))

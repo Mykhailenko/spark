@@ -1249,7 +1249,13 @@ class DAGScheduler(
       logInfo("%s (%s) finished in %s s".format(stage, stage.name, serviceTime))
       stage.latestInfo.completionTime = Some(clock.getTimeMillis())
 
-      cacheLogger.debug("" + cacheLocs)
+      val rddStorage=sc.getRDDStorageInfo;
+
+      cacheLogger.debug("In stage "+ stage.id);
+
+      for(rddInfo<- rddStorage.filter(_.memSize>0))
+        { cacheLogger.debug("the size of Rdd" + rddInfo.id +"is"+ rddInfo.memSize);
+        }
 
     } else {
       stage.latestInfo.stageFailed(errorMessage.get)

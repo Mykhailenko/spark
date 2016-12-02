@@ -764,9 +764,19 @@ class DAGScheduler(
 
   /** Submits stage, but first recursively submits any missing parents. */
   private def submitStage(stage: Stage) {
+
     val jobId = activeJobForStage(stage)
     if (jobId.isDefined) {
+      
+       val rddStorage=sc.getRDDStorageInfo;
+      cacheLogger.debug("stage"+stage.id)
+
+      for(rddInfo <- rddStorage.filter(_.memSize > 0))
+        { cacheLogger.debug("Rdd" + rddInfo.id +" "+ rddInfo.memSize);
+        }
+
       logDebug("submitStage(" + stage + ")")
+
       if (!waitingStages(stage) && !runningStages(stage) && !failedStages(stage)) {
         val missing = getMissingParentStages(stage).sortBy(_.id)
         logDebug("missing: " + missing)
@@ -779,7 +789,7 @@ class DAGScheduler(
           }
           waitingStages += stage
         }
-      }
+      }         
     } else {
       abortStage(stage, "No active job for stage " + stage.id, None)
     }
@@ -1249,13 +1259,7 @@ class DAGScheduler(
       logInfo("%s (%s) finished in %s s".format(stage, stage.name, serviceTime))
       stage.latestInfo.completionTime = Some(clock.getTimeMillis())
 
-      val rddStorage=sc.getRDDStorageInfo;
-
-      cacheLogger.debug("In stage "+ stage.id);
-
-      for(rddInfo<- rddStorage.filter(_.memSize>0))
-        { cacheLogger.debug("the size of Rdd" + rddInfo.id +"is"+ rddInfo.memSize);
-        }
+      
 
     } else {
       stage.latestInfo.stageFailed(errorMessage.get)

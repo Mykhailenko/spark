@@ -638,6 +638,7 @@ class DAGScheduler(
       val failedStagesCopy = failedStages.toArray
       failedStages.clear()
       for (stage <- failedStagesCopy.sortBy(_.firstJobId)) {
+        cacheLogger.debug("stage"+stage.id+" has failed")
         submitStage(stage)
       }
     }
@@ -658,6 +659,7 @@ class DAGScheduler(
     val waitingStagesCopy = waitingStages.toArray
     waitingStages.clear()
     for (stage <- waitingStagesCopy.sortBy(_.firstJobId)) {
+      cacheLogger.debug("stage"+stage.id+" was waiting")
       submitStage(stage)
     }
   }
@@ -757,6 +759,7 @@ class DAGScheduler(
       val stageInfos = stageIds.flatMap(id => stageIdToStage.get(id).map(_.latestInfo))
       listenerBus.post(
         SparkListenerJobStart(job.jobId, jobSubmissionTime, stageInfos, properties))
+        cacheLogger.debug("stage"+finalStage.id+" is the final stage ")
       submitStage(finalStage)
     }
     submitWaitingStages()
@@ -785,6 +788,7 @@ class DAGScheduler(
           submitMissingTasks(stage, jobId.get)
         } else {
           for (parent <- missing) {
+             cacheLogger.debug("stage"+parent.id+" is submitted as parent of stage"+stage.id)
             submitStage(parent)
           }
           waitingStages += stage
@@ -1081,6 +1085,7 @@ class DAGScheduler(
                   ") because some of its tasks had failed: " +
                   shuffleStage.outputLocs.zipWithIndex.filter(_._1.isEmpty)
                       .map(_._2).mkString(", "))
+                  cacheLogger.debug("some tasks has failed we resubmit shufflestage"+shuffleStage.id)      
                 submitStage(shuffleStage)
               } else {
                 val newlyRunnable = new ArrayBuffer[Stage]

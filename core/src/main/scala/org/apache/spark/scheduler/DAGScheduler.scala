@@ -776,7 +776,7 @@ class DAGScheduler(
           logInfo("Submitting " + stage + " (" + stage.rdd + "), which has no missing parents")
            val rddStorage=sc.getRDDStorageInfo;
             cacheLogger.debug("stage"+stage.id)
-
+             
          for(rddInfo <- rddStorage.filter(_.memSize > 0))
            { cacheLogger.debug("Rdd" + rddInfo.id +" "+ rddInfo.memSize);
            }
@@ -1099,6 +1099,12 @@ class DAGScheduler(
                 } {
                   logInfo("Submitting " + shuffleStage + " (" +
                     shuffleStage.rdd + "), which is now runnable")
+                   val rddStorage=sc.getRDDStorageInfo;
+                  cacheLogger.debug("stage"+shuffleStage.id)
+             
+              for(rddInfo <- rddStorage.filter(_.memSize > 0))
+             { cacheLogger.debug("Rdd" + rddInfo.id +" "+ rddInfo.memSize);
+              }
                   submitMissingTasks(shuffleStage, jobId)
                 }
               }
